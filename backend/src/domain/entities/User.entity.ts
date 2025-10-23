@@ -16,7 +16,32 @@ export class User {
     public lastSeen: Date | null = null
   ) {}
 
-  // Método para obtener datos públicos del usuario (sin password)
+  // Factory para crear un User desde un objeto (sin necesidad de pasar id/fechas)
+  public static create(props: {
+    username: string;
+    email: string;
+    passwordHash: string;
+    displayName: string;
+    avatarUrl?: string | null;
+    status?: UserStatus;
+    about?: string;
+    lastSeen?: Date | null;
+  }): User {
+    return new User(
+      0, // id provisional; el repositorio / BD deberá asignar el id real
+      props.username,
+      props.email,
+      props.passwordHash,
+      props.displayName,
+      props.avatarUrl ?? null,
+      props.status ?? UserStatus.OFFLINE,
+      props.about ?? 'Hey there! I am using WhatsApp Clone',
+      new Date(), // createdAt
+      new Date(), // updatedAt
+      props.lastSeen ?? null
+    );
+  }
+
   public toPublic() {
     return {
       id: this.id,
@@ -30,13 +55,11 @@ export class User {
     };
   }
 
-  // Validar que el email sea válido
   public static isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
 
-  // Validar que el username sea válido
   public static isValidUsername(username: string): boolean {
     const usernameRegex = /^[a-zA-Z0-9_]{3,50}$/;
     return usernameRegex.test(username);
