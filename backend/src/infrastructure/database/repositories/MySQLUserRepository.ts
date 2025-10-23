@@ -1,0 +1,161 @@
+// backend/src/infrastructure/database/repositories/MySQLUserRepository.ts
+import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import { User } from '../../../domain/entities/User.entity';
+import { UserStatus } from '../../../shared/types/user.types';
+import { database } from '../mysql/connection';
+import { RowDataPacket } from 'mysql2';
+
+interface UserRow extends RowDataPacket {
+  id: number;
+  username: string;
+  email: string;
+  password_hash: string;
+  display_name: string;
+  avatar_url: string | null;
+  status: UserStatus;
+  about: string;
+  created_at: Date;
+  updated_at: Date;
+  last_seen: Date | null;
+}
+
+export class MySQLUserRepository implements IUserRepository {
+  
+  private mapRowToUser(row: UserRow): User {
+    return new User(
+      row.id,
+      row.username,
+      row.email,
+      row.password_hash,
+      row.display_name,
+      row.avatar_url,
+      row.status,
+      row.about,
+      row.created_at,
+      row.updated_at,
+      row.last_seen
+    );
+  }
+
+  async create(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
+    const sql = `
+      INSERT INTO users (username, email, password_hash, display_name, avatar_url, status, about)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    
+    const [result]: any = await database.query(sql, [
+      userData.username,
+      userData.email,
+      userData.passwordHash,
+      userData.displayName,
+      userData.avatarUrl,
+      userData.status,
+      userData.about,
+    ]);
+
+    const newUser = await this.findById(result.insertId);
+    if (!newUser) {
+      throw new Error('Failed to create user');
+    }
+    
+    return newUser;
+  }
+
+  async findById(id: number): Promise<User | null> {
+    const sql = 'SELECT * FROM users WHERE id = ?';
+    const rows = await database.query<UserRow[]>(sql, [id]);
+    
+    if (rows.length === 0) {
+      return null;
+    }
+    
+    return this.mapRowToUser(rows[0]);
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const sql = 'SELECT * FROM users WHERE email = ?';
+    const rows = await database.query<UserRow[]>(sql, [email]);
+    
+    if (rows.length === 0) {
+      return null;
+    }
+    
+    return this.mapRowToUser(rows[0]);
+  }
+
+  async findByUsername(username: string): Promise<User | null> {
+    const sql = 'SELECT * FROM users WHERE username = ?';
+    const rows = await database.query<UserRow[]>(sql, [username]);
+    
+    if (rows.length === 0) {
+      return null;
+    }
+    
+    return this.mapRowToUser(rows[0]);
+  }
+
+  async update(id: number, userData: Partial<User>): Promise<User | null> {
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    if (userData.displayName !== undefined) {
+      updates.push('display_name = ?');
+      values.push(userData.displayName);
+    }
+    if (userData.avatarUrl !== undefined) {
+      updates.push('avatar_url = ?');
+      values.push(userData.avatarUrl);
+    }
+    if (userData.about !== undefined) {
+      updates.push('about = ?');
+      values.push(userData.about);
+    }
+    if (userData.status !== undefined) {
+      updates.push('status = ?');
+      values.push(userData.status);
+    }
+
+    if (updates.length === 0) {
+      return this.findById(id);
+    }
+
+    const sql = `UPDATE users SET ${updates.join(', ')}, updated_at = NOW() WHERE id = ?`;
+    values.push(id);
+
+    await database.query(sql, values);
+    return this.findById(id);
+  }
+
+  async updateStatus(id: number, status: UserStatus): Promise<void> {
+    const sql = 'UPDATE users SET status = ?, updated_at = NOW() WHERE id = ?';
+    await database.query(sql, [status, id]);
+  }
+
+  async updateLastSeen(id: number): Promise<void> {
+    const sql = 'UPDATE users SET last_seen = NOW(), updated_at = NOW() WHERE id = ?';
+    await database.query(sql, [id]);
+  }
+
+  async delete(id: number): Promise<boolean> {
+    const sql = 'DELETE FROM users WHERE id = ?';
+    const [result]: any = await database.query(sql, [id]);
+    return result.affectedRows > 0;
+  }
+
+  async findAll(searchTerm?: string, limit: number = 50): Promise<User[]> {
+    let sql = 'SELECT * FROM users';
+    const params: any[] = [];
+
+    if (searchTerm) {
+      sql += ' WHERE username LIKE ? OR display_name LIKE ? OR email LIKE ?';
+      const search = `%${searchTerm}%`;
+      params.push(search, search, search);
+    }
+
+    sql += ' ORDER BY display_name ASC LIMIT ?';
+    params.push(limit);
+
+    const rows = await database.query<UserRow[]>(sql, params);
+    return rows.map(row => this.mapRowToUser(row));
+  }
+}
