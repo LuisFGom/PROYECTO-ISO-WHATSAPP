@@ -28,30 +28,26 @@ export const LoginPage = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError('');
+    e.preventDefault();
+    setError('');
 
-  if (!formData.email || !formData.password) {
-    setError('Por favor completa todos los campos');
-    return;
-  }
+    if (!formData.email || !formData.password) {
+      setError('Por favor completa todos los campos');
+      return;
+    }
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  try {
-    const response = await loginUseCase.execute(formData);
-    
-    // El usuario ya viene con status 'online' del backend
-    console.log('Usuario logueado:', response.data.user);
-    
-    setAuth(response.data.user, response.data.token);
-    navigate('/home');
-  } catch (err: any) {
-    setError(err.message || 'Error al iniciar sesión');
-  } finally {
-    setIsLoading(false);
-  }
-};
+    try {
+      const response = await loginUseCase.execute(formData);
+      setAuth(response.data.user, response.data.token);
+      navigate('/home');
+    } catch (err: any) {
+      setError(err.message || 'Error al iniciar sesión');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex h-screen">

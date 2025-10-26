@@ -8,10 +8,12 @@ export const HomePage = () => {
 
   const handleLogout = async () => {
     try {
+      // Llamar al backend para actualizar status a offline
       await apiClient.post('/auth/logout');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     } finally {
+      // Limpiar localStorage y redirigir
       logout();
       navigate('/login');
     }
@@ -42,7 +44,9 @@ export const HomePage = () => {
                 <span className={`w-3 h-3 rounded-full ${
                   user.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
                 }`}></span>
-                <p className="text-lg font-semibold capitalize text-green-600">
+                <p className={`text-lg font-semibold capitalize ${
+                  user.status === 'online' ? 'text-green-600' : 'text-gray-500'
+                }`}>
                   {user.status === 'online' ? 'En línea' : 'Desconectado'}
                 </p>
               </div>
