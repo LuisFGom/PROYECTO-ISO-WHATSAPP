@@ -1,10 +1,20 @@
 // backend/src/domain/repositories/IUserRepository.ts
-import { User } from '../entities/User.entity';
-import { UserStatus } from '../../shared/types/user.types';
+import type { User } from '../entities/User.entity';
+import type { UserStatus } from '../../shared/types/user.types';
+
+export interface CreateUserData {
+  username: string;
+  email: string;
+  passwordHash: string;
+  avatarUrl?: string | null;
+  status?: UserStatus;
+  about?: string;
+  lastSeen?: Date | null;
+}
 
 export interface IUserRepository {
-  // Crear usuario
-  create(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
+  // Crear usuario - ahora acepta CreateUserData
+  create(userData: CreateUserData): Promise<User>;
   
   // Buscar usuario por ID
   findById(id: number): Promise<User | null>;

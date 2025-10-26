@@ -9,7 +9,7 @@ interface RegisterResponse {
 }
 
 export class RegisterUseCase {
-  async execute(data: RegisterFormData): Promise<RegisterResponse> {
+  async execute(data: RegisterFormData): Promise<User> {  // Cambiado: retorna User en vez de RegisterResponse
     try {
       // Validar que las contraseñas coincidan
       if (data.password !== data.confirmPassword) {
@@ -20,10 +20,9 @@ export class RegisterUseCase {
         username: data.username,
         email: data.email,
         password: data.password,
-        displayName: data.username, // Usamos username como displayName
       });
 
-      return response.data;
+      return response.data.data;  // Retornar solo el User
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message || 'Error al registrarse'

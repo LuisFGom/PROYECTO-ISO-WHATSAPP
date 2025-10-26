@@ -12,16 +12,15 @@ const registerUserUseCase = new RegisterUserUseCase(userRepository);
 const loginUserUseCase = new LoginUserUseCase(userRepository);
 
 export class AuthController {
-  
+
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { username, email, password, displayName } = req.body;
+      const { username, email, password } = req.body;  // Quita displayName
 
       const user = await registerUserUseCase.execute({
         username,
         email,
-        password,
-        displayName,
+        password,  // Solo estos 3 campos
       });
 
       res.status(201).json({
@@ -40,6 +39,7 @@ export class AuthController {
       }
     }
   }
+
 
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {

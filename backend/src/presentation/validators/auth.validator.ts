@@ -19,12 +19,6 @@ export const registerValidator = [
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long'),
 
-  body('displayName')
-    .trim()
-    .notEmpty()
-    .withMessage('Display name is required')
-    .isLength({ max: 100 })
-    .withMessage('Display name must be less than 100 characters'),
 ];
 
 export const loginValidator = [

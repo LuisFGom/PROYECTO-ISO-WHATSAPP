@@ -1,16 +1,15 @@
 // backend/src/infrastructure/database/repositories/MySQLUserRepository.ts
-import { IUserRepository } from '../../../domain/repositories/IUserRepository';
+import type { IUserRepository, CreateUserData } from '../../../domain/repositories/IUserRepository';
 import { User } from '../../../domain/entities/User.entity';
 import { UserStatus } from '../../../shared/types/user.types';
 import { database } from '../mysql/connection';
-import { RowDataPacket } from 'mysql2';
+import type { RowDataPacket } from 'mysql2';
 
 interface UserRow extends RowDataPacket {
   id: number;
   username: string;
   email: string;
   password_hash: string;
-  display_name: string;
   avatar_url: string | null;
   status: UserStatus;
   about: string;
@@ -27,7 +26,6 @@ export class MySQLUserRepository implements IUserRepository {
       row.username,
       row.email,
       row.password_hash,
-      row.display_name,
       row.avatar_url,
       row.status,
       row.about,
@@ -37,20 +35,19 @@ export class MySQLUserRepository implements IUserRepository {
     );
   }
 
-  async create(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
+  async create(userData: CreateUserData): Promise<User> {
     const sql = `
-      INSERT INTO users (username, email, password_hash, display_name, avatar_url, status, about)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (username, email, password_hash, avatar_url, status, about)
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
     
     const [result]: any = await database.query(sql, [
       userData.username,
       userData.email,
       userData.passwordHash,
-      userData.displayName,
-      userData.avatarUrl,
-      userData.status,
-      userData.about,
+      userData.avatarUrl || null,
+      userData.status || UserStatus.OFFLINE,
+      userData.about || 'Hey there! I am using WhatsApp Clone',
     ]);
 
     const newUser = await this.findById(result.insertId);
@@ -98,9 +95,9 @@ export class MySQLUserRepository implements IUserRepository {
     const updates: string[] = [];
     const values: any[] = [];
 
-    if (userData.displayName !== undefined) {
-      updates.push('display_name = ?');
-      values.push(userData.displayName);
+    if (userData.username !== undefined) {
+      updates.push('username = ?');
+      values.push(userData.username);
     }
     if (userData.avatarUrl !== undefined) {
       updates.push('avatar_url = ?');
@@ -147,12 +144,12 @@ export class MySQLUserRepository implements IUserRepository {
     const params: any[] = [];
 
     if (searchTerm) {
-      sql += ' WHERE username LIKE ? OR display_name LIKE ? OR email LIKE ?';
+      sql += ' WHERE username LIKE ? OR email LIKE ?';
       const search = `%${searchTerm}%`;
-      params.push(search, search, search);
+      params.push(search, search);
     }
 
-    sql += ' ORDER BY display_name ASC LIMIT ?';
+    sql += ' ORDER BY username ASC LIMIT ?';
     params.push(limit);
 
     const rows = await database.query<UserRow[]>(sql, params);

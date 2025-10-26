@@ -1,10 +1,30 @@
 // frontend/src/presentation/pages/HomePage.tsx
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { apiClient } from '../../infrastructure/api/apiClient';
 
 export const HomePage = () => {
-  const { user, logout } = useAuthStore();
+  const { user: storedUser, logout } = useAuthStore();
+  const [user, setUser] = useState(storedUser);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Obtener datos actualizados del usuario
+    const fetchUserData = async () => {
+      try {
+        const response = await apiClient.get(`/users/${storedUser?.id}`);
+        setUser(response.data.data);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        setUser(storedUser);
+      }
+    };
+
+    if (storedUser) {
+      fetchUserData();
+    }
+  }, [storedUser]);
 
   const handleLogout = () => {
     logout();
@@ -32,7 +52,12 @@ export const HomePage = () => {
 
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-sm text-gray-600">Estado:</p>
-              <p className="text-lg font-semibold capitalize">{user.status}</p>
+              <div className="flex items-center gap-2">
+                <span className={`w-3 h-3 rounded-full ${
+                  user.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                }`}></span>
+                <p className="text-lg font-semibold capitalize">{user.status}</p>
+              </div>
             </div>
 
             <div className="p-4 bg-gray-50 rounded-lg">
