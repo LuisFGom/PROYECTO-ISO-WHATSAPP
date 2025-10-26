@@ -32,7 +32,6 @@ export const RegisterPage = () => {
     setError('');
     setSuccess('');
 
-    // Validaciones
     if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Por favor completa todos los campos');
       return;
@@ -52,7 +51,7 @@ export const RegisterPage = () => {
 
     try {
       await registerUseCase.execute(formData);
-      setSuccess('¡Registro exitoso! Redirigiendo al login...');
+      setSuccess('¡Usuario registrado correctamente! Redirigiendo al login...');
       setTimeout(() => {
         navigate('/login');
       }, 2000);
@@ -65,7 +64,6 @@ export const RegisterPage = () => {
 
   return (
     <div className="flex h-screen">
-      {/* Lado izquierdo - Imagen */}
       <div
         className="hidden lg:flex lg:w-1/2 bg-cover bg-center"
         style={{ backgroundImage: `url(${loginBackground})` }}
@@ -75,20 +73,14 @@ export const RegisterPage = () => {
         </div>
       </div>
 
-      {/* Lado derecho - Formulario */}
       <div className="w-full lg:w-1/2 flex items-center justify-center bg-white p-8">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-whatsapp-green mb-2">
-              REGISTRO
-            </h2>
-            <h3 className="text-2xl font-semibold text-whatsapp-green">
-              WHATSAPP WEB
-            </h3>
+            <h2 className="text-3xl font-bold text-whatsapp-green mb-2">REGISTRO</h2>
+            <h3 className="text-2xl font-semibold text-whatsapp-green">WHATSAPP WEB</h3>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Username */}
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
                 Nombre de Usuario
@@ -105,7 +97,6 @@ export const RegisterPage = () => {
               />
             </div>
 
-            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Correo Electrónico
@@ -122,7 +113,6 @@ export const RegisterPage = () => {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Contraseña
@@ -139,7 +129,6 @@ export const RegisterPage = () => {
               />
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                 Confirmar Contraseña
@@ -156,21 +145,18 @@ export const RegisterPage = () => {
               />
             </div>
 
-            {/* Error Message */}
             {error && (
               <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
-            {/* Success Message */}
             {success && (
               <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
                 {success}
               </div>
             )}
 
-            {/* Buttons */}
             <div className="flex gap-4">
               <Link
                 to="/login"

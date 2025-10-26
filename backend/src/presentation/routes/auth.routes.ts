@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { authController } from '../controllers/auth.controller';
 import { registerValidator, loginValidator } from '../validators/auth.validator';
 import { validationMiddleware } from '../middlewares/validation.middleware';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -20,6 +21,13 @@ router.post(
   loginValidator,
   validationMiddleware,
   authController.login.bind(authController)
+);
+
+// POST /api/auth/logout
+router.post(
+  '/logout',
+  authMiddleware,
+  authController.logout.bind(authController)
 );
 
 export default router;

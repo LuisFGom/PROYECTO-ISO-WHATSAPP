@@ -1,34 +1,20 @@
-// frontend/src/presentation/pages/HomePage.tsx
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import { apiClient } from '../../infrastructure/api/apiClient';
 
 export const HomePage = () => {
-  const { user: storedUser, logout } = useAuthStore();
-  const [user, setUser] = useState(storedUser);
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Obtener datos actualizados del usuario
-    const fetchUserData = async () => {
-      try {
-        const response = await apiClient.get(`/users/${storedUser?.id}`);
-        setUser(response.data.data);
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        setUser(storedUser);
-      }
-    };
-
-    if (storedUser) {
-      fetchUserData();
+  const handleLogout = async () => {
+    try {
+      await apiClient.post('/auth/logout');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    } finally {
+      logout();
+      navigate('/login');
     }
-  }, [storedUser]);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
   };
 
   return (
@@ -54,9 +40,11 @@ export const HomePage = () => {
               <p className="text-sm text-gray-600">Estado:</p>
               <div className="flex items-center gap-2">
                 <span className={`w-3 h-3 rounded-full ${
-                  user.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
+                  user.status === 'online' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
                 }`}></span>
-                <p className="text-lg font-semibold capitalize">{user.status}</p>
+                <p className="text-lg font-semibold capitalize text-green-600">
+                  {user.status === 'online' ? 'En línea' : 'Desconectado'}
+                </p>
               </div>
             </div>
 
