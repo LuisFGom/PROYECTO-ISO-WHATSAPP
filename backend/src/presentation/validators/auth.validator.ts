@@ -18,7 +18,8 @@ export const registerValidator = [
   body('password')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long'),
-
+  
+  // NO DEBE HABER VALIDACIÓN DE displayName AQUÍ
 ];
 
 export const loginValidator = [

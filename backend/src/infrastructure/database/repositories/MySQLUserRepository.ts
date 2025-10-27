@@ -36,12 +36,13 @@ export class MySQLUserRepository implements IUserRepository {
   }
 
   async create(userData: CreateUserData): Promise<User> {
-    const sql = `
-      INSERT INTO users (username, email, password_hash, avatar_url, status, about)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    
-    const [result]: any = await database.query(sql, [
+  const sql = `
+    INSERT INTO users (username, email, password_hash, avatar_url, status, about)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+  
+  try {
+    const result = await database.query(sql, [
       userData.username,
       userData.email,
       userData.passwordHash,
@@ -50,13 +51,26 @@ export class MySQLUserRepository implements IUserRepository {
       userData.about || 'Hey there! I am using WhatsApp Clone',
     ]);
 
-    const newUser = await this.findById(result.insertId);
+    // result es un array: [ResultSetHeader, FieldPacket[]]
+    // ResultSetHeader tiene la propiedad insertId
+    const resultSetHeader: any = Array.isArray(result) ? result[0] : result;
+    const insertId = resultSetHeader.insertId;
+
+    if (!insertId) {
+      throw new Error('Failed to get insert ID');
+    }
+
+    const newUser = await this.findById(insertId);
     if (!newUser) {
-      throw new Error('Failed to create user');
+      throw new Error('Failed to retrieve created user');
     }
     
     return newUser;
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw error;
   }
+}
 
   async findById(id: number): Promise<User | null> {
     const sql = 'SELECT * FROM users WHERE id = ?';

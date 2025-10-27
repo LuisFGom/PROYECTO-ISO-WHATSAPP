@@ -1,16 +1,13 @@
 // backend/src/presentation/controllers/auth.controller.ts
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
+import type { AuthRequest } from '../middlewares/auth.middleware';
 import { RegisterUserUseCase } from '../../application/use-cases/auth/RegisterUser.usecase';
 import { LoginUserUseCase } from '../../application/use-cases/auth/LoginUser.usecase';
-import { MySQLUserRepository } from '../../infrastructure/database/repositories/MySQLUserRepository';
-import type { AuthRequest } from '../middlewares/auth.middleware';
 import { LogoutUserUseCase } from '../../application/use-cases/auth/LogoutUser.usecase';
+import { MySQLUserRepository } from '../../infrastructure/database/repositories/MySQLUserRepository';
+import { User } from '../../domain/entities/User.entity';
 
-
-// Instanciar repositorio
 const userRepository = new MySQLUserRepository();
-
-// Instanciar casos de uso
 const registerUserUseCase = new RegisterUserUseCase(userRepository);
 const loginUserUseCase = new LoginUserUseCase(userRepository);
 
@@ -20,28 +17,51 @@ export class AuthController {
     try {
       const { username, email, password } = req.body;
 
+      //console.log('📝 Datos recibidos:', { username, email, password });
+
       const user = await registerUserUseCase.execute({
         username,
         email,
         password,
       });
 
-      res.status(201).json({  // 201 = Created (éxito)
+      //console.log('✅ Usuario creado:', user);
+      //console.log('🔍 Tipo de user:', typeof user);
+      //console.log('🔍 Es instancia de User?:', user instanceof User);
+
+      const response = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        status: user.status,
+        about: user.about,
+        lastSeen: user.lastSeen,
+      };
+
+      //console.log('📤 Respuesta a enviar:', response);
+
+      res.status(201).json({
         success: true,
         message: 'User registered successfully',
-        data: user.toPublic(),
+        data: response,
       });
     } catch (error) {
+      //console.error('❌ Error en register:', error);
       if (error instanceof Error) {
-        res.status(400).json({  // 400 solo para errores
+        res.status(400).json({
           success: false,
           message: error.message,
         });
       } else {
-        next(error);
+        res.status(400).json({
+          success: false,
+          message: String(error),
+        });
       }
     }
   }
+
 
 
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -66,8 +86,6 @@ export class AuthController {
       }
     }
   }
-
-  // Agrega esto al final de la clase AuthController
 
   async logout(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {

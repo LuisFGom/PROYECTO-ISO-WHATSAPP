@@ -1,32 +1,28 @@
 // frontend/src/application/use-cases/auth/RegisterUseCase.ts
 import { apiClient } from '../../../infrastructure/api/apiClient';
-import type { RegisterFormData, User } from '../../../shared/types/auth.types';
-
-interface RegisterResponse {
-  success: boolean;
-  message: string;
-  data: User;
-}
+import type { RegisterFormData } from '../../../shared/types/auth.types';
 
 export class RegisterUseCase {
-  async execute(data: RegisterFormData): Promise<User> {  // Cambiado: retorna User en vez de RegisterResponse
+  async execute(data: RegisterFormData): Promise<void> {
     try {
       // Validar que las contraseñas coincidan
       if (data.password !== data.confirmPassword) {
         throw new Error('Las contraseñas no coinciden');
       }
 
-      const response = await apiClient.post<RegisterResponse>('/auth/register', {
+      await apiClient.post('/auth/register', {
         username: data.username,
         email: data.email,
         password: data.password,
       });
 
-      return response.data.data;  // Retornar solo el User
+      // Si llega aquí, el registro fue exitoso
+      // No necesitamos retornar nada
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 'Error al registrarse'
-      );
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      throw new Error('Error al registrarse');
     }
   }
 }
