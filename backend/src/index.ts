@@ -46,7 +46,7 @@ app.use('/api', routes);
 app.use(errorMiddleware);
 
 // Iniciar servidor
-app.listen(config.port, () => {
+app.listen(config.port, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${config.port}`);
   console.log(`📍 http://localhost:${config.port}`);
   console.log(`🌍 Environment: ${config.nodeEnv}`);
