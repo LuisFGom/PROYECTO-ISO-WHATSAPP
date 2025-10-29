@@ -75,6 +75,7 @@ export class AuthController {
         message: 'Login successful',
         data: authResponse,
       });
+<<<<<<< HEAD
     } catch (error: any) {
 
       const statusCode = error.status || 401;
@@ -89,6 +90,20 @@ export class AuthController {
   }
 
 
+=======
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(401).json({
+          success: false,
+          message: error.message,
+        });
+      } else {
+        next(error);
+      }
+    }
+  }
+
+>>>>>>> 776a32e346feca63bdf0d9016af6e18c556c766b
   async logout(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       if (!req.userId) {

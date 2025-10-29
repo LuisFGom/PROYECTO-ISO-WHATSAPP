@@ -1,4 +1,3 @@
-// frontend/src/presentation/pages/LoginPage.tsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -10,7 +9,7 @@ export const LoginPage = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
   
   // 🔥 LOG PARA DETECTAR RE-RENDERS
-  console.log('🔵 LoginPage renderizado'); // Nota: Este log es normal en cada re-render.
+  console.log('🔵 LoginPage renderizado'); 
 
   const [formData, setFormData] = useState({
     email: '',
@@ -92,8 +91,6 @@ export const LoginPage = () => {
 
         console.log('📝 Mostrando error:', errorMessage);
         
-        // No necesitamos setTimeout si usamos el estado normal
-        console.log('📝 SetError ejecutado');
         setError(errorMessage);
         setIsLoading(false);
       });
